@@ -37,12 +37,7 @@ int waveType = SINE;
 #define freqDownPin 3
 #define FSYNC2 5
 #define FSYNC1 4
-#define SS 53 // SS                  // Standard SPI pins for the AD9833 waveform generator.
-#define pulseHigh(pin)       \
-  {                          \
-    digitalWrite(pin, HIGH); \
-    digitalWrite(pin, LOW);  \
-  }
+                // Standard SPI pins for the AD9833 waveform generator.
 
 /*
   51 or ICSP-4  MOSI
@@ -51,22 +46,26 @@ int waveType = SINE;
   53
 */
 
-const float refFreq = 25000000.0; // On-board crystal reference frequency on AD9833
-double trimFreq = 124999500;
-volatile unsigned long freq = 535000; // Set initial frequency.
-unsigned long freqOld = 535010;
-unsigned long incr = 10000;
+const float refFreq = 25000000.0;     // On-board crystal reference frequency on AD9833
+volatile unsigned long freq = 100000; // Set initial frequency.
+volatile unsigned long freqOld = 100010;
+const long incr = 10000;
 
 volatile unsigned long tonefreq = 1000;
 unsigned long tonefreqold = 100;
-unsigned long minfreq = 535000;
+unsigned long minfreq = 100000;
 unsigned long maxfreq = 1705000;
-unsigned long stepfreq = 10000;
+const long stepfreq = 10000;
 unsigned long mode = 0;
-// 0 - stop  1 -change tonefreq 2- change carrier freq ,3 Run
-unsigned long incrtone = 10;
-unsigned long maxtonefreq = 15000;
-unsigned long mintonefreq = 50;
+/*
+ 0 - stop
+ 1 -change tonefreq
+ 2- change carrier freq ,
+ 3- Run
+*/
+const unsigned long incrtone = 100;
+const long maxtonefreq = 10000;
+const long mintonefreq = 100;
 unsigned long oldValue = HIGH;
 
 Rotary rotary = Rotary(freqUpPin, freqDownPin); // Rotary encoder  connects to interrupt pins
@@ -200,12 +199,28 @@ void AD9833setFrequency(long frequency, int Waveform, uint8_t Device)
   int MSB = (int)((FreqWord & 0xFFFC000) >> 14); // Only lower 14 bits are used for data
   int LSB = (int)(FreqWord & 0x3FFF);
   // Set control bits 15 ande 14 to 0 and 1, respectively, for frequency register 0
+  /*
+    DB15 and DB14 are set to 0 and 1, respectively, which is the Frequency Register 0 address.
+    The remaining 14 bits are the 14 LSBs of data:
+  */
   LSB |= 0x4000;
   MSB |= 0x4000;
   SPI.beginTransaction(SPISettings(14000000, MSBFIRST, SPI_MODE2));
+  /*
+  0x2100—Control Register
+    DB13 is set to 1. This allows a complete word to be loaded into a frequency register in two consecutive writes. The first write contains 14 LSBs. The second write contains 14 MSBs.
+    RESET bit DB8 is set to 1. This resets internal registers to 0, which corresponds to an analog output of midscale
+  */
   WriteRegister(0x2100, Device);
-  WriteRegister(LSB, Device);      // Write lower 16 bits to AD9833 registers
-  WriteRegister(MSB, Device);      // Write upper 16 bits to AD9833 registers.
+  WriteRegister(LSB, Device); // Write lower 16 bits to AD9833 registers
+  WriteRegister(MSB, Device); // Write upper 16 bits to AD9833 registers.
+  /*
+  0xC000—Phase Register 0
+  DB15, DB14, and DB13 are set to 110, with DB12 set to don’t care (X), respectively, which is the address for Phase Register 0.
+  The remaining 12 bits are the data bits and are all 0s in this case.
+  0x2000—Exit Reset
+  A signal appears at the output of the DAC seven MCLK cycles after RESET is set to 0.
+  */
   WriteRegister(0xC000, Device);   // Phase register
   WriteRegister(Waveform, Device); // Exit & Reset to SINE, SQUARE or TRIANGLE
   SPI.endTransaction();
@@ -230,18 +245,18 @@ void rotaryISR()
     {
       // do nothing
     }
-    else if (result == DIR_CW)
-    { // Clockwise rotation so add increment to frequency
+    else if (result == DIR_CW)// Clockwise rotation  add increment to frequency
+    { 
       if (mode == 2)
       {
-        if ((freq + incr) < maxfreq)
+        if ((freq + incr) <= maxfreq)
         {
           freq += incr;
         }
       }
-      else // mode 1
+      else if (mode == 1)
       {
-        if ((tonefreq + incrtone) < maxtonefreq)
+        if ((tonefreq + incrtone) <= maxtonefreq)
         {
           tonefreq += incrtone;
         }
@@ -252,14 +267,14 @@ void rotaryISR()
     {
       if (mode == 2)
       { // 2- change carrier freq
-        if ((freq - incr) > minfreq)
+        if ((freq - incr) >= minfreq)
         {
           freq -= incr;
         }
       }
-      else
+       else if (mode == 1)
       {
-        if ((tonefreq - incrtone) > mintonefreq)
+        if ((tonefreq - incrtone) >= mintonefreq)
         {
           tonefreq -= incrtone;
         }
