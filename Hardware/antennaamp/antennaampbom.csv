@@ -1,0 +1,10 @@
+"Id";"Designator";"Package";"Quantity";"Designation";"Supplier and ref";
+1;"U1";"SOIC-14_3.9x8.7mm_P1.27mm";1;"TL084";;;
+2;"R10,R5";"R_0603_1608Metric_Pad0.98x0.95mm_HandSolder";2;"30K";;;
+3;"R9,R7,R6,R4,R2";"R_0603_1608Metric_Pad0.98x0.95mm_HandSolder";5;"43K";;;
+4;"R8,R3";"R_0603_1608Metric_Pad0.98x0.95mm_HandSolder";2;"16k";;;
+5;"R1";"R_0603_1608Metric";1;"43K";;;
+6;"J2,J1";"PinHeader_1x04_P2.54mm_Vertical";2;"PoweIn";;;
+7;"C6,C5,C4,C1";"C_0603_1608Metric_Pad1.08x0.95mm_HandSolder";4;"220pF";;;
+8;"C3";"C_0603_1608Metric_Pad1.08x0.95mm_HandSolder";1;"100nF";;;
+9;"C2";"C_0603_1608Metric_Pad1.08x0.95mm_HandSolder";1;"100nf";;;

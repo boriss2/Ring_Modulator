@@ -1,8 +1,11 @@
 /*
   AD9833 Waveform Module vwlowen.co.uk
+http://www.vwlowen.co.uk/arduino/AD9833-waveform-generator/AD9833-waveform-generator.htm
+
   adopted by Boris Shteynberg bshteynb@gmail.com
 */
 // This program requires the UTFT library.
+// output amplifier ths3201 or THS3491 or buf634
 #include <Arduino.h>
 #include <SPI.h>
 #include <Rotary.h> // Rotary encoder: https://github.com/brianlow/Rotary
